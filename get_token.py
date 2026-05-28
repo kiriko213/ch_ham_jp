@@ -1,5 +1,8 @@
 import os
 import json
+import warnings
+warnings.filterwarnings("ignore", category=Warning)
+os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 SCOPES = [
@@ -25,9 +28,18 @@ def main():
         include_granted_scopes="true"
     )
     
+    import pickle
+    
     if not creds.refresh_token:
         print("ERROR: refresh_token not obtained. Revoke app access and retry.")
         return
+        
+    token_dir = 'tokens'
+    os.makedirs(token_dir, exist_ok=True)
+    token_path = os.path.join(token_dir, 'youtube.pickle')
+    with open(token_path, 'wb') as f:
+        pickle.dump(creds, f)
+    print(f"Saved local token to {token_path}")
     
     with open(client_secret_file, 'r') as f:
         client_data = json.load(f)
